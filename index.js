@@ -1,13 +1,23 @@
+const http = require('http');
+const express = require('express');
+const Routes = require('./routes');
+const cors = require('cors');
+const { nextTick } = require('process');
+const app = express();
 
-const Routes = require('./routes')
+require('dotenv-safe').config();
 
-require("dotenv-safe").config();
-
-const server = http.createServer(app); 
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 server.listen(PORT);
 
+var corsOptions = {
+  origin: 'http://localhost:52002',
+};
+//app.use(() => {
+//  console.log('da');
+//  nextTick();
+//});
 app.use(express.json());
-
-app.use('', Routes)
-
+app.use(cors(corsOptions));
+app.use('', Routes);

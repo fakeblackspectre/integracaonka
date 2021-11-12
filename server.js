@@ -1,38 +1,35 @@
-var express = require('express');
-var app = express();
+const express = require('express');
 
-app.get('/', function (req, res) {
-   
-    var sql = require("mssql");
+const app = express();
 
-    // config for your database
-    var config = {
-        user: 'sa',
-        password: '',
-        server: '.\SQL2014', 
-        database: 'Clinicas_barc' 
-    };
+app.get('/', (req, res) => {
+  const sql = require('mssql');
 
-    // connect to your database
-    sql.connect(config, function (err) {
-    
-        if (err) console.log(err);
+  // config for your database
+  const config = {
+    user: 'sa',
+    password: '',
+    server: '.SQL2014',
+    database: 'Clinicas_barc',
+  };
 
-        // create Request object
-        var request = new sql.Request();
-           
-        // query to the database and get the records
-        request.query('select * from Student', function (err, recordset) {
-            
-            if (err) console.log(err)
+  // connect to your database
+  sql.connect(config, (err) => {
+    if (err) console.log(err);
 
-            // send records as a response
-            res.send(recordset);
-            
-        });
+    // create Request object
+    const request = new sql.Request();
+
+    // query to the database and get the records
+    request.query('select * from Student', (err, recordset) => {
+      if (err) console.log(err);
+
+      // send records as a response
+      res.send(recordset);
     });
+  });
 });
 
-var server = app.listen(5000, function () {
-    console.log('Server is running..');
+const server = app.listen(5000, () => {
+  console.log('Server is running..');
 });
