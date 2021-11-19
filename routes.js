@@ -14,15 +14,16 @@ const ApiConfiguracao = require('./ApiConfiguracao');
 
 const router = express.Router();
 
-router.use((req, res, next) => {
-  console.log('aqui');
-  next();
-});
 // Rota para receber código do utente e devolver os dados do utente
 router.get('/utente', verifyJWT, async (req, res, next) => {
   try {
-    const utente = await Utente.getUtente(req.body.id);
-    res.json(utente);
+    if (req.body.id) {
+      const utente = await Utente.getUtente(req.body.id);
+      res.json(utente);
+    } else {
+      const utenteAll = await Utente.getAllUtentes();
+      res.json(utente);
+    }
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -31,12 +32,25 @@ router.get('/utente', verifyJWT, async (req, res, next) => {
 // Rota para receber código do tratamento e devolver os dados do tratamento e respetivas aulas
 router.get('/tratamento', verifyJWT, async (req, res, next) => {
   try {
-    const cabecalho = await Tratamento.getTratamento(req.body.id);
-    const aulas = await Tratamento.getAulas(req.body.id);
+    if (req.body.id) {
+      const cabecalho = await Tratamento.getTratamento(req.body.id);
+      const aulas = await Tratamento.getAulas(req.body.id);
 
-    const tratamento = { ...cabecalho, aulas: [...aulas] };
+      const tratamento = { ...cabecalho, aulas: [...aulas] };
 
-    res.json(tratamento);
+      res.json(tratamento);
+    } else {
+      let tratamentoAll = new Array();
+      const cabecalhoAll = await Tratamento.getAllTratamento();
+
+      for await (c of cabecalhoAll) {
+        const aulas = await Tratamento.getAulas(c.c_tratamen);
+        const tratamento = { ...c, aulas: [...aulas] };
+        tratamentoAll.push(tratamento);
+      }
+
+      res.json(tratamentoAll);
+    }
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -44,14 +58,20 @@ router.get('/tratamento', verifyJWT, async (req, res, next) => {
 
 router.get('/fisioterapeuta', verifyJWT, async (req, res, next) => {
   try {
-    const { id } = req.body; // Exemplo: T123|1
-    const splited = id.split('|');
-    const codigo = splited[0].substring(1);
-    const tipo = splited[0][0];
-    const filtro = splited[1];
-    const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
+    const id = req.body.id; // Exemplo: T123|1
+    if (id) {
+      const splited = id.split('|');
+      const codigo = splited[0].substring(1);
+      const tipo = splited[0][0];
+      const filtro = splited[1];
+      const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
 
-    res.json(terapeuta);
+      res.json(terapeuta);
+    } else {
+      const terapeutaAll = await Terapeuta.getAllTerapeuta();
+      res.json(terapeutaAll);
+      s;
+    }
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -99,158 +119,334 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
       }
     };
     //#endregion
-
-    const { id } = req.body; // Exemplo: T123|1
-    const splited = id.split('|');
-    const codigo = splited[0].substring(1);
-    const tipo = splited[0][0];
-    const filtro = splited[1];
-
-    const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
-    const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
-      codigo,
-      tipo
-    );
-    const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
-    const tempoTratamento = terapeuta.min_marc;
-    const TempoTratamentoMinutos =
-      moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
-      moment(tempoTratamento, 'HH:mm').get('minutes');
-    const maxTratamentos = terapeuta.maxtrat;
-    const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
-    //const empresa = await Calendario.getEmpresa(filtro);
-    const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
-    const aulas = await Calendario.getMarcacoesComUnidade(codigo, tipo, filtro);
-
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const dataFinal = new Date(
-      hoje.getFullYear() + 2, // Enviar intervalo de 2 anos
-      hoje.getMonth(),
-      hoje.getDate()
-    );
-
+    //
     let disponibilidades = [];
     let disponibilidadesDia = [];
+    let maxTratamentos;
+    const id = req.body.id; // Exemplo: T123|1
+    if (id) {
+      const splited = id.split('|');
+      const codigo = splited[0].substring(1);
+      const tipo = splited[0][0];
+      const filtro = splited[1];
 
-    for (let d = hoje; d <= dataFinal; d.setDate(d.getDate() + 1)) {
-      disponibilidadesDia = [];
-      const diaSemana = d.getDay(); // domingo 0 // segunda 1....
-      if (folgasEmpresa.includes(diaSemana)) continue;
-      let sigla = getSigla(diaSemana);
-      const horaInicioManha = terapeuta[`${sigla}_m_hi`];
-      const horaFimManha = terapeuta[`${sigla}_m_hf`];
-      const horaInicioTarde = terapeuta[`${sigla}_t_hi`];
-      const horaFimTarde = terapeuta[`${sigla}_t_hf`];
+      const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
+      if (!terapeuta) return res.json(terapeuta);
 
-      // #region Horário fixo de manhã
-      if (!!horaInicioManha && !!horaFimManha)
-        addHorasPossiveis(
-          horaInicioManha,
-          horaFimManha,
-          TempoTratamentoMinutos,
-          d
-        );
-      // #endregion
-      // #region Horário fixo de tarde
-      if (!!horaInicioTarde && !!horaFimTarde)
-        addHorasPossiveis(
-          horaInicioTarde,
-          horaFimTarde,
-          TempoTratamentoMinutos,
-          d
-        );
-      //#endregion
-      // #region HORARIO VARIAVEL
-      const horarioVariavelDia = horarioVariavel.filter(
-        (f) => f.data.getTime() == d.getTime()
+      const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
+        codigo,
+        tipo
       );
-      if (horarioVariavelDia.length == 1) {
-        // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
-        //Horario Variavel Manha
-        if (
-          !!horarioVariavelDia[0].d_m_inic &&
-          !!horarioVariavelDia[0].d_m_fim
-        ) {
+      const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
+      const tempoTratamento = terapeuta.min_marc;
+      const TempoTratamentoMinutos =
+        moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
+        moment(tempoTratamento, 'HH:mm').get('minutes');
+      maxTratamentos = terapeuta.maxtrat;
+      const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
+      //const empresa = await Calendario.getEmpresa(filtro);
+      const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
+      const aulas = await Calendario.getMarcacoesComUnidade(
+        codigo,
+        tipo,
+        filtro
+      );
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const dataFinal = new Date(
+        hoje.getFullYear() + 2, // Enviar intervalo de 2 anos
+        hoje.getMonth(),
+        hoje.getDate()
+      );
+
+      for (let d = hoje; d <= dataFinal; d.setDate(d.getDate() + 1)) {
+        disponibilidadesDia = [];
+        const diaSemana = d.getDay(); // domingo 0 // segunda 1....
+        if (folgasEmpresa.includes(diaSemana)) continue;
+        let sigla = getSigla(diaSemana);
+        const horaInicioManha = terapeuta[`${sigla}_m_hi`];
+        const horaFimManha = terapeuta[`${sigla}_m_hf`];
+        const horaInicioTarde = terapeuta[`${sigla}_t_hi`];
+        const horaFimTarde = terapeuta[`${sigla}_t_hf`];
+
+        // #region Horário fixo de manhã
+        if (!!horaInicioManha && !!horaFimManha)
           addHorasPossiveis(
-            horarioVariavelDia[0].d_m_inic,
-            horarioVariavelDia[0].d_m_fim,
+            horaInicioManha,
+            horaFimManha,
             TempoTratamentoMinutos,
             d
           );
-        }
-        //Horario Variavel Tarde
-        if (
-          !!horarioVariavelDia[0].d_t_inic &&
-          !!horarioVariavelDia[0].d_t_fim
-        ) {
+        // #endregion
+        // #region Horário fixo de tarde
+        if (!!horaInicioTarde && !!horaFimTarde)
           addHorasPossiveis(
-            horarioVariavelDia[0].d_t_inic,
-            horarioVariavelDia[0].d_t_fim,
+            horaInicioTarde,
+            horaFimTarde,
             TempoTratamentoMinutos,
             d
           );
+        //#endregion
+        // #region HORARIO VARIAVEL
+        const horarioVariavelDia = horarioVariavel.filter(
+          (f) => f.data.getTime() == d.getTime()
+        );
+        if (horarioVariavelDia.length == 1) {
+          // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
+          //Horario Variavel Manha
+          if (
+            !!horarioVariavelDia[0].d_m_inic &&
+            !!horarioVariavelDia[0].d_m_fim
+          ) {
+            addHorasPossiveis(
+              horarioVariavelDia[0].d_m_inic,
+              horarioVariavelDia[0].d_m_fim,
+              TempoTratamentoMinutos,
+              d
+            );
+          }
+          //Horario Variavel Tarde
+          if (
+            !!horarioVariavelDia[0].d_t_inic &&
+            !!horarioVariavelDia[0].d_t_fim
+          ) {
+            addHorasPossiveis(
+              horarioVariavelDia[0].d_t_inic,
+              horarioVariavelDia[0].d_t_fim,
+              TempoTratamentoMinutos,
+              d
+            );
+          }
         }
+        // #endregion
+        // #region FOLGAS
+        const folgasDia = folgas.filter((f) => f.data.getTime() == d.getTime());
+        if (folgasDia.length == 1) {
+          if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
+            addHorasPossiveis(
+              folgasDia[0].d_m_inic,
+              folgasDia[0].d_m_fim,
+              TempoTratamentoMinutos,
+              d,
+              true
+            );
+          }
+          if (!!folgasDia[0].d_t_inic && !!folgasDia[0].d_t_fim) {
+            addHorasPossiveis(
+              folgasDia[0].d_t_inic,
+              folgasDia[0].d_t_fim,
+              TempoTratamentoMinutos,
+              d,
+              true
+            );
+          }
+        }
+        //#endregion
+        // #region Remover Vagas Por Marcação
+        const aulasDia = aulas.filter((f) => f.data.getTime() == d.getTime());
+        if (aulasDia.length > 0) {
+          aulasDia.forEach((e) => {
+            for (let a of disponibilidadesDia) {
+              if (
+                a.data.getTime() == e.data.getTime() &&
+                a.hora == e.horainic
+              ) {
+                a.vagas -= e.UnidadeTempo;
+                break;
+              }
+            }
+          });
+        }
+        disponibilidadesDia = disponibilidadesDia.filter((f) => {
+          return f.vagas > 0;
+        });
+
+        // #endregion
+
+        disponibilidadesDia.sort((a, b) =>
+          moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
+            ? 1
+            : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
+            ? -1
+            : 0
+        ); // ordenar por hora
+        disponibilidades = disponibilidades.concat(disponibilidadesDia); // adicionar ao array global as disponiblidades do dia
       }
-      // #endregion
-      // #region FOLGAS
-      const folgasDia = folgas.filter((f) => f.data.getTime() == d.getTime());
-      if (folgasDia.length == 1) {
-        if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
-          addHorasPossiveis(
-            folgasDia[0].d_m_inic,
-            folgasDia[0].d_m_fim,
-            TempoTratamentoMinutos,
-            d,
-            true
+
+      const calendario = {
+        id: terapeuta.id,
+        nome: terapeuta.nome,
+        marcacoes,
+        disponibilidades,
+      };
+      res.json(calendario);
+    } else {
+      const terapeutaAll = await Terapeuta.getAllTerapeuta();
+      if (terapeutaAll.length == 0) return res.json(terapeutaAll);
+      let calendarioAll = new Array();
+      for await (terapeuta of terapeutaAll) {
+        disponibilidades = [];
+        const splited = terapeuta.id.split('|');
+        const codigo = splited[0].substring(1);
+        const tipo = splited[0][0];
+        const filtro = splited[1];
+        const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
+          codigo,
+          tipo
+        );
+        const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
+        const tempoTratamento = terapeuta.min_marc;
+        const TempoTratamentoMinutos =
+          moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
+          moment(tempoTratamento, 'HH:mm').get('minutes');
+        maxTratamentos = terapeuta.maxtrat;
+        const marcacoes = await Terapeuta.getAulasTerapeuta(
+          codigo,
+          tipo,
+          filtro
+        );
+        //const empresa = await Calendario.getEmpresa(filtro);
+        const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
+        const aulas = await Calendario.getMarcacoesComUnidade(
+          codigo,
+          tipo,
+          filtro
+        );
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const dataFinal = new Date(
+          hoje.getFullYear() + 2, // Enviar intervalo de 2 anos
+          hoje.getMonth(),
+          hoje.getDate()
+        );
+
+        for (let d = hoje; d <= dataFinal; d.setDate(d.getDate() + 1)) {
+          disponibilidadesDia = [];
+          const diaSemana = d.getDay(); // domingo 0 // segunda 1....
+          if (folgasEmpresa.includes(diaSemana)) continue;
+          let sigla = getSigla(diaSemana);
+          const horaInicioManha = terapeuta[`${sigla}_m_hi`];
+          const horaFimManha = terapeuta[`${sigla}_m_hf`];
+          const horaInicioTarde = terapeuta[`${sigla}_t_hi`];
+          const horaFimTarde = terapeuta[`${sigla}_t_hf`];
+
+          // #region Horário fixo de manhã
+          if (!!horaInicioManha && !!horaFimManha)
+            addHorasPossiveis(
+              horaInicioManha,
+              horaFimManha,
+              TempoTratamentoMinutos,
+              d
+            );
+          // #endregion
+          // #region Horário fixo de tarde
+          if (!!horaInicioTarde && !!horaFimTarde)
+            addHorasPossiveis(
+              horaInicioTarde,
+              horaFimTarde,
+              TempoTratamentoMinutos,
+              d
+            );
+          //#endregion
+          // #region HORARIO VARIAVEL
+          const horarioVariavelDia = horarioVariavel.filter(
+            (f) => f.data.getTime() == d.getTime()
           );
-        }
-        if (!!folgasDia[0].d_t_inic && !!folgasDia[0].d_t_fim) {
-          addHorasPossiveis(
-            folgasDia[0].d_t_inic,
-            folgasDia[0].d_t_fim,
-            TempoTratamentoMinutos,
-            d,
-            true
-          );
-        }
-      }
-      //#endregion
-      // #region Remover Vagas Por Marcação
-      const aulasDia = aulas.filter((f) => f.data.getTime() == d.getTime());
-      if (aulasDia.length > 0) {
-        aulasDia.forEach((e) => {
-          for (let a of disponibilidadesDia) {
-            if (a.data.getTime() == e.data.getTime() && a.hora == e.horainic) {
-              a.vagas -= e.UnidadeTempo;
-              break;
+          if (horarioVariavelDia.length == 1) {
+            // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
+            //Horario Variavel Manha
+            if (
+              !!horarioVariavelDia[0].d_m_inic &&
+              !!horarioVariavelDia[0].d_m_fim
+            ) {
+              addHorasPossiveis(
+                horarioVariavelDia[0].d_m_inic,
+                horarioVariavelDia[0].d_m_fim,
+                TempoTratamentoMinutos,
+                d
+              );
+            }
+            //Horario Variavel Tarde
+            if (
+              !!horarioVariavelDia[0].d_t_inic &&
+              !!horarioVariavelDia[0].d_t_fim
+            ) {
+              addHorasPossiveis(
+                horarioVariavelDia[0].d_t_inic,
+                horarioVariavelDia[0].d_t_fim,
+                TempoTratamentoMinutos,
+                d
+              );
             }
           }
-        });
+          // #endregion
+          // #region FOLGAS
+          const folgasDia = folgas.filter(
+            (f) => f.data.getTime() == d.getTime()
+          );
+          if (folgasDia.length == 1) {
+            if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
+              addHorasPossiveis(
+                folgasDia[0].d_m_inic,
+                folgasDia[0].d_m_fim,
+                TempoTratamentoMinutos,
+                d,
+                true
+              );
+            }
+            if (!!folgasDia[0].d_t_inic && !!folgasDia[0].d_t_fim) {
+              addHorasPossiveis(
+                folgasDia[0].d_t_inic,
+                folgasDia[0].d_t_fim,
+                TempoTratamentoMinutos,
+                d,
+                true
+              );
+            }
+          }
+          //#endregion
+          // #region Remover Vagas Por Marcação
+          const aulasDia = aulas.filter((f) => f.data.getTime() == d.getTime());
+          if (aulasDia.length > 0) {
+            aulasDia.forEach((e) => {
+              for (let a of disponibilidadesDia) {
+                if (
+                  a.data.getTime() == e.data.getTime() &&
+                  a.hora == e.horainic
+                ) {
+                  a.vagas -= e.UnidadeTempo;
+                  break;
+                }
+              }
+            });
+          }
+          disponibilidadesDia = disponibilidadesDia.filter((f) => {
+            return f.vagas > 0;
+          });
+
+          // #endregion
+
+          disponibilidadesDia.sort((a, b) =>
+            moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
+              ? 1
+              : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
+              ? -1
+              : 0
+          ); // ordenar por hora
+          disponibilidades = disponibilidades.concat(disponibilidadesDia); // adicionar ao array global as disponiblidades do dia
+        }
+        const calendario = {
+          id: terapeuta.id,
+          nome: terapeuta.nome,
+          marcacoes,
+          disponibilidades,
+        };
+        calendarioAll.push(calendario);
       }
-      disponibilidadesDia = disponibilidadesDia.filter((f) => {
-        return f.vagas > 0;
-      });
 
-      // #endregion
-
-      disponibilidadesDia.sort((a, b) =>
-        moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
-          ? 1
-          : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
-          ? -1
-          : 0
-      ); // ordenar por hora
-      disponibilidades = disponibilidades.concat(disponibilidadesDia); // adicionar ao array global as disponiblidades do dia
+      res.json(calendarioAll);
     }
-
-    const calendario = {
-      id: terapeuta.id,
-      nome: terapeuta.nome,
-      marcacoes,
-      disponibilidades,
-    };
-    res.json(calendario);
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -259,7 +455,6 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 // Rota para fazer login e devolver o token de autenticação
 router.post('/login', (req, res, next) => {
   // esse teste abaixo deve ser feito no seu banco de dados
-
   if (
     req.body.ClientID === process.env.CLIENT_ID &&
     req.body.ClientSecret === process.env.CLIENT_SECRET
@@ -284,35 +479,33 @@ router.post('/logout', (req, res) => {
 
 // Recebe as requisições da clicloud e reencaminha o pedido para NKA
 // Server para todos //UTENTES // CALENDARIO // FISIOTERAPEUTA // TRATAMENTO
-router.post('/sendWebhook', (req, res, next) => {
-  console.log('olá');
-  //if (
-  //  !!req.body.modulo ||
-  //  !!req.body.operacao ||
-  //  !!req.body.operacaoregisto ||
-  //  !!req.body.id ||
-  //  !!req.body.urlexterno
-  //) {
-  //  const data = {
-  //    modulo: req.body.modulo,
-  //    operacao: req.body.operacao,
-  //    operacaoregisto: req.body.operacaoregisto,
-  //    id: req.body.id,
-  //    clientid: process.env.NKA_CLIENT_ID,
-  //    clientsecret: process.env.NKA_CLIENT_SECRET,
-  //  };
-  //  try {
-  //    const resp = await axios.post(req.body.urlexterno, data);
-  //    if (resp) {
-  //      res.json({ message: 'Sucesso!' });
-  //      return;
-  //    }
-  //    res.status(500).json({ message: 'Erro a comunicar com API externa' });
-  //  } catch (err) {
-  //    next(createError(500, 'Erro a comunicar com API externa'));
-  //  }
-  //}
-  return res.status(500).json({ message: 'Parâmetros em falta!' });
+router.post('/sendWebhook', async (req, res, next) => {
+  if (
+    req.body.modulo ||
+    req.body.operacao ||
+    req.body.operacaoregisto ||
+    req.body.id ||
+    req.body.urlexterno
+  ) {
+    const data = {
+      modulo: req.body.modulo,
+      operacao: req.body.operacao,
+      operacaoregisto: req.body.operacaoregisto,
+      id: req.body.id,
+      clientid: process.env.NKA_CLIENT_ID,
+      clientsecret: process.env.NKA_CLIENT_SECRET,
+    };
+    try {
+      const resp = await axios.post(req.body.urlexterno, data);
+      if (resp) {
+        return res.json({ message: 'Sucesso!' });
+      }
+      return next(createError(500, 'Erro a comunicar com API externa'));
+    } catch (err) {
+      return next(createError(500, 'Erro a comunicar com API externa'));
+    }
+  }
+  next(createError(500, 'API - Parâmetros em falta!'));
 });
 
 //receber webhooks de NKA quando é alterada uma aula ou um registo de presença

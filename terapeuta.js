@@ -14,7 +14,7 @@ class Terapeuta {
             pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
             ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
             ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
-            from TERAPEUTA where c_tecnico = @1 AND 'T' = @2 AND filtro = @3
+            from TERAPEUTA where c_tecnico = @1 AND 'T' = @2 AND filtro = @3 And Pilates = 1
             
             UNION ALL
             
@@ -24,7 +24,7 @@ class Terapeuta {
             pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
             ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
             ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
-            from AUXILIAR where c_tecnico = @1 AND 'A' = @2 AND filtro = @3
+            from AUXILIAR where c_tecnico = @1 AND 'A' = @2 AND filtro = @3 And Pilates = 1
             
             UNION ALL
             
@@ -34,7 +34,7 @@ class Terapeuta {
             pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
             ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
             ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
-            from TERAPEUTAOCUP where c_tecnico = @1 AND 'O' = @2 AND filtro = @3`;
+            from TERAPEUTAOCUP where c_tecnico = @1 AND 'O' = @2 AND filtro = @3 And Pilates = 1`;
 
       return await dboperations.getItem(_sql, params);
     } catch (error) {
@@ -45,6 +45,45 @@ class Terapeuta {
           ' e o filtro ' +
           filtro
       );
+    }
+  }
+
+  static async getAllTerapeuta() {
+    try {
+      let params = new Array();
+
+      let _sql = `
+            select 
+            'T' + convert(varchar, c_tecnico) + '|' + convert(varchar, filtro) id, 
+            c_tecnico, nome, n_contrib, localidade, telf, num_bi, arquivo, data_emiss, data_nasc,
+            pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
+            ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
+            ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
+            from TERAPEUTA where Pilates = 1
+            
+            UNION ALL
+            
+            select 
+            'A' + convert(varchar, c_tecnico) + '|' + convert(varchar, filtro) id, 
+            c_tecnico, nome, n_contrib, localidade, telf, num_bi, arquivo, data_emiss, data_nasc,
+            pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
+            ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
+            ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
+            from AUXILIAR where Pilates = 1
+            
+            UNION ALL
+            
+            select 
+            'O' + convert(varchar, c_tecnico) + '|' + convert(varchar, filtro) id, 
+            c_tecnico, nome, n_contrib, localidade, telf, num_bi, arquivo, data_emiss, data_nasc,
+            pai, mae, sexo, min_marc, cartprof, maxtrat, telemovel,sg_m_hi,sg_m_hf,sg_t_hi,sg_t_hf,tr_m_hi,tr_m_hf,tr_t_hi,tr_t_hf,qr_m_hi,qr_m_hf
+            ,qr_t_hi,qr_t_hf,qn_m_hi,qn_m_hf,qn_t_hi,qn_t_hf,sx_m_hi,sx_m_hf,sx_t_hi,sx_t_hf
+            ,sb_m_hi,sb_m_hf,sb_t_hi,sb_t_hf,dm_m_hi,dm_m_hf,dm_t_hi,dm_t_hf, obs
+            from TERAPEUTAOCUP where Pilates = 1`;
+
+      return await dboperations.getList(_sql, params);
+    } catch (error) {
+      utils.handleError(error, 'Não foram encontrados terapeutas');
     }
   }
 
@@ -70,11 +109,11 @@ class Terapeuta {
         AND (isnull(s.faltou, 0) = 0 or isnull(i.faltas, 0) = 0)
         AND (isnull(t.suspenso, 0) = 0 or t.DataSuspensao > s.data or (t.DataSuspensao = s.data AND isnull(s.histsess, 0) = 1))
       INNER join (
-          select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA
+          select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA where Pilates = 1
           UNION ALL 
-          select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR
+          select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR where Pilates = 1
           UNION ALL 
-          select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP
+          select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP where Pilates = 1
       ) ter on t.filtro = ter.filtro AND (
           (s.c_fisioter = ter.c_tecnico AND ter.tipo = 'T') or 
           (s.c_auxiliar = ter.c_tecnico AND ter.tipo = 'A') or
@@ -102,13 +141,13 @@ class Terapeuta {
 
       let _sql = `
       select c_tecnico, data, d_m_inic, d_m_fim , d_t_inic, d_t_fim
-      from HORVART where c_tecnico = @1 AND @2 = 'T' 
+      from HORVART where c_tecnico = @1 AND @2 = 'T'
       UNION ALL 
       select c_tecnico, data, d_m_inic, d_m_fim , d_t_inic, d_t_fim
       from HORVARA where c_tecnico = @1 AND @2 = 'A' 
       UNION ALL
       select c_tecnico, data, d_m_inic, d_m_fim , d_t_inic, d_t_fim
-      from HORVARTOCUP where c_tecnico = @1 AND @2 = 'O' `;
+      from HORVARTOCUP where c_tecnico = @1 AND @2 = 'O'`;
 
       return await dboperations.getList(_sql, params);
     } catch (error) {

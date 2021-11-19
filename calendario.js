@@ -56,11 +56,11 @@ class Calendario {
         AND (isnull(t.suspenso, 0) = 0 or t.DataSuspensao > s.data or (t.DataSuspensao = s.data AND isnull(s.histsess, 0) = 1))
         AND s.data >= cast(GETDATE() as date)
         INNER join (
-          select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA
+          select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA where Pilates = 1
           UNION ALL 
-          select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR
+          select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR where Pilates = 1
           UNION ALL 
-          select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP
+          select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP where Pilates = 1
         ) ter on t.filtro = ter.filtro AND (
           (s.c_fisioter = ter.c_tecnico AND ter.tipo = 'T') or 
           (s.c_auxiliar = ter.c_tecnico AND ter.tipo = 'A') or

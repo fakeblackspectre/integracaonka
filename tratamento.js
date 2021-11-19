@@ -17,8 +17,34 @@ class Tratamento {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foi encontrado o utente com o código ' + codigo
+        'Não foi encontrado o tratamento com o código ' + codigo
       );
+    }
+  }
+
+  static async getAllTratamento() {
+    try {
+      let params = new Array();
+
+      let _sql = `
+      select t.c_tratamen, u.c_utente, u.nome, u.n_contrib 
+      from TRATAMEN t 
+      inner join UTENTES u on t.c_utente = u.c_utente
+      inner join SESSTRAT s on t.c_tratamen = s.c_tratamen and isnull(s.apagado, 0) = 0
+      inner join (
+        select c_tecnico, filtro, 'T' tipo from TERAPEUTA where isnull(Pilates, 0) = 1
+        UNION ALL 
+        select c_tecnico, filtro, 'A' tipo from AUXILIAR where isnull(Pilates, 0) = 1
+        UNION ALL 
+        select c_tecnico, filtro, 'O' tipo from TERAPEUTAOCUP where isnull(Pilates, 0) = 1
+      ) tec on (tec.tipo = 'T' AND tec.c_tecnico = s.c_fisioter AND t.filtro = tec.filtro)
+      OR (tec.tipo = 'A' AND tec.c_tecnico = s.c_auxiliar AND t.filtro = tec.filtro)
+      OR (tec.tipo = 'O' AND tec.c_tecnico = s.outro AND t.filtro = tec.filtro)
+      group by t.c_tratamen, u.c_utente, u.nome, u.n_contrib`;
+
+      return await dboperations.getList(_sql, params);
+    } catch (error) {
+      utils.handleError(error, 'Não foi encontrados tratamento');
     }
   }
 
@@ -41,11 +67,11 @@ class Tratamento {
                     or (isnull(t.suspenso, 0) = 1 AND t.DataSuspensao = s.data AND isnull(s.histsess, 0) = 1) 
                 ) 
             left join (
-                select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA
+                select c_tecnico, filtro, nome, min_marc, 'T' tipo from TERAPEUTA where Pilates = 1
                 UNION ALL 
-                select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR
+                select c_tecnico, filtro, nome, min_marc, 'A' tipo from AUXILIAR where Pilates = 1
                 UNION ALL 
-                select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP
+                select c_tecnico, filtro, nome, min_marc, 'O' tipo from TERAPEUTAOCUP where Pilates = 1
             ) ter on t.filtro = ter.filtro AND (
                 (s.c_fisioter = ter.c_tecnico AND ter.tipo = 'T') or 
                 (s.c_auxiliar = ter.c_tecnico AND ter.tipo = 'A') or
