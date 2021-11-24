@@ -9,7 +9,7 @@ class Utente {
   //}
 
   static async getUtente(codigo) {
-    // Aqui
+    // Função para obter um ou todos os utentes
     try {
       let params = new Array();
       params.push(codigo);
