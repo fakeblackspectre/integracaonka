@@ -9,6 +9,7 @@ class Utente {
   //}
 
   static async getUtente(codigo) {
+    // Aqui
     try {
       let params = new Array();
       params.push(codigo);
