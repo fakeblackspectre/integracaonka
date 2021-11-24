@@ -78,23 +78,14 @@ router.get('/fisioterapeuta', verifyJWT, async (req, res, next) => {
 router.get('/calendario', verifyJWT, async (req, res, next) => {
   try {
     // #region funções
-    const getSigla = (d) => {
-      switch (d) {
-        case 0:
-          return 'dm';
-        case 1:
-          return 'sg';
-        case 2:
-          return 'tr';
-        case 3:
-          return 'qr';
-        case 4:
-          return 'qn';
-        case 5:
-          return 'sx';
-        case 6:
-          return 'sb';
-      }
+    const getSigla = {
+      0: 'dm',
+      1: 'sg',
+      2: 'tr',
+      3: 'qr',
+      4: 'qn',
+      5: 'sx',
+      6: 'sb'
     };
 
     const addHorasPossiveis = (inicioP, fimP, intervalo, data, remove) => {
@@ -162,7 +153,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         disponibilidadesDia = [];
         const diaSemana = d.getDay(); // domingo 0 // segunda 1....
         if (folgasEmpresa.includes(diaSemana)) continue;
-        let sigla = getSigla(diaSemana);
+        let sigla = getSigla[diaSemana];
         const horaInicioManha = terapeuta[`${sigla}_m_hi`];
         const horaFimManha = terapeuta[`${sigla}_m_hf`];
         const horaInicioTarde = terapeuta[`${sigla}_t_hi`];
@@ -323,7 +314,8 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
           disponibilidadesDia = [];
           const diaSemana = d.getDay(); // domingo 0 // segunda 1....
           if (folgasEmpresa.includes(diaSemana)) continue;
-          let sigla = getSigla(diaSemana);
+          let sigla = getSigla[diaSemana];
+
           const horaInicioManha = terapeuta[`${sigla}_m_hi`];
           const horaFimManha = terapeuta[`${sigla}_m_hf`];
           const horaInicioTarde = terapeuta[`${sigla}_t_hi`];
