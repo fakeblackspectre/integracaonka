@@ -1,5 +1,5 @@
-const dboperations = require('./dboperations');
-const utils = require('./utils');
+const dboperations = require('../Utils/dboperations');
+const utils = require('../Utils/utils');
 
 class Utente {
   //constructor(c_utente, Nome, Contribuinte){
@@ -13,9 +13,9 @@ class Utente {
       let params = new Array();
       params.push(codigo);
 
-      let _sql = `Select u_utente, nome, n_contrib, morada, telf, data_nasc, localidade, sexo, pai, mae, n_famil,
+      let _sql = `Select c_utente, nome, n_contrib, morada, telf, data_nasc, localidade, sexo, pai, mae, n_famil,
              txmod, contacto, contactelf, migrante, entidade_financeira, pais_efr, prefixo_pais, c_distrito, c_concelho, c_freguesia, 
-             c_zona, num_bi, data_emiss, arquivo
+             c_zona, num_bi, data_emiss, arquivo, userapi, passapi
              from UTENTES where c_utente = @1`;
 
       return await dboperations.getItem(_sql, params);
@@ -30,14 +30,14 @@ class Utente {
     try {
       let params = new Array();
 
-      let _sql = `Select u_utente, nome, n_contrib, morada, telf, data_nasc, localidade, sexo, pai, mae, n_famil,
+      let _sql = `Select c_utente, nome, n_contrib, morada, telf, data_nasc, localidade, sexo, pai, mae, n_famil,
              txmod, contacto, contactelf, migrante, entidade_financeira, pais_efr, prefixo_pais, c_distrito, c_concelho, c_freguesia, 
-             c_zona, num_bi, data_emiss, arquivo
+             c_zona, num_bi, data_emiss, arquivo, userapi, passapi
              from UTENTES `;
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, 'Não foi encontrados utentes');
+      utils.handleError(error, 'Não foram encontrados utentes');
     }
   }
 }

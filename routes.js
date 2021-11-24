@@ -5,25 +5,25 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
 const axios = require('axios');
-const Utente = require('./utente');
-const Tratamento = require('./tratamento');
-const Terapeuta = require('./terapeuta');
-const Calendario = require('./calendario');
+const Utente = require('./Database/utente');
+const Tratamento = require('./Database/tratamento');
+const Terapeuta = require('./Database/terapeuta');
+const Calendario = require('./Database/calendario');
 const moment = require('moment');
-const ApiConfiguracao = require('./ApiConfiguracao');
+const ApiConfiguracao = require('./Database/apiConfiguracao');
 
 const router = express.Router();
 
 // Rota para receber código do utente e devolver os dados do utente
 router.get('/utente', verifyJWT, async (req, res, next) => {
   try {
-    if (req.body.id) {
-      const utente = await Utente.getUtente(req.body.id);
-      res.json(utente);
-    } else {
-      const utenteAll = await Utente.getAllUtentes();
-      res.json(utente);
+    const id = req.body.id;
+    if (id) {
+      const utente = await Utente.getUtente(id);
+      return res.json(utente);
     }
+    const utenteAll = await Utente.getAllUtentes();
+    res.json(utenteAll);
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -32,25 +32,25 @@ router.get('/utente', verifyJWT, async (req, res, next) => {
 // Rota para receber código do tratamento e devolver os dados do tratamento e respetivas aulas
 router.get('/tratamento', verifyJWT, async (req, res, next) => {
   try {
-    if (req.body.id) {
-      const cabecalho = await Tratamento.getTratamento(req.body.id);
-      const aulas = await Tratamento.getAulas(req.body.id);
-
+    const id = req.body.id;
+    if (id) {
+      const cabecalho = await Tratamento.getTratamento(id);
+      const aulas = await Tratamento.getAulas(id);
       const tratamento = { ...cabecalho, aulas: [...aulas] };
 
-      res.json(tratamento);
-    } else {
-      let tratamentoAll = new Array();
-      const cabecalhoAll = await Tratamento.getAllTratamento();
-
-      for await (c of cabecalhoAll) {
-        const aulas = await Tratamento.getAulas(c.c_tratamen);
-        const tratamento = { ...c, aulas: [...aulas] };
-        tratamentoAll.push(tratamento);
-      }
-
-      res.json(tratamentoAll);
+      return res.json(tratamento);
     }
+
+    let tratamentoAll = new Array();
+    const cabecalhoAll = await Tratamento.getAllTratamento();
+
+    for await (c of cabecalhoAll) {
+      const aulas = await Tratamento.getAulas(c.c_tratamen);
+      const tratamento = { ...c, aulas: [...aulas] };
+      tratamentoAll.push(tratamento);
+    }
+
+    res.json(tratamentoAll);
   } catch (err) {
     next(createError(500, err.message));
   }
@@ -66,12 +66,10 @@ router.get('/fisioterapeuta', verifyJWT, async (req, res, next) => {
       const filtro = splited[1];
       const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
 
-      res.json(terapeuta);
-    } else {
-      const terapeutaAll = await Terapeuta.getAllTerapeuta();
-      res.json(terapeutaAll);
-      s;
+      return res.json(terapeuta);
     }
+    const terapeutaAll = await Terapeuta.getAllTerapeuta();
+    res.json(terapeutaAll);
   } catch (err) {
     next(createError(500, err.message));
   }

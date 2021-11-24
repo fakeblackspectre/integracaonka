@@ -1,5 +1,5 @@
-const dboperations = require('./dboperations');
-const utils = require('./utils');
+const dboperations = require('../Utils/dboperations');
+const utils = require('../Utils/utils');
 
 class Calendario {
   static async getEmpresa(filtro) {

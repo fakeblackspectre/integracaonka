@@ -1,11 +1,12 @@
 // config for your database
+require('dotenv-safe').config();
 
 const config = {
-  server: 'localhost\\SQL2014',
-  port: 1432,
-  user: 'sa',
+  server: process.env.SERVER,
+  port: process.env.PORT_DB,
+  user: process.env.USER_DB,
   password: '',
-  database: 'Clinicas_barc',
+  database: process.env.DATABASE,
   options: {
     enableArithAbort: true,
     trustServerCertificate: true,

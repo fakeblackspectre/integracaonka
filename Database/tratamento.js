@@ -1,5 +1,5 @@
-const dboperations = require('./dboperations');
-const utils = require('./utils');
+const dboperations = require('../Utils/dboperations');
+const utils = require('../Utils/utils');
 
 class Tratamento {
   static async getTratamento(codigo) {
@@ -44,7 +44,7 @@ class Tratamento {
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, 'Não foi encontrados tratamento');
+      utils.handleError(error, 'Não foram encontrados tratamentos');
     }
   }
 
@@ -55,9 +55,9 @@ class Tratamento {
 
       let _sql = `
             select s.c_sesstrat codigo, s.data, s.horainic, 
-            convert(varchar(5), cast(convert(datetime, s.horainic) + convert(datetime, ter.min_marc) as time)) horaFim,
-            ter.tipo + convert(varchar, ter.c_tecnico) + '|' + convert(varchar, ter.filtro) codigoTecnico, 
-            ter.nome nomeTecnico
+            convert(varchar(5), cast(convert(datetime, s.horainic) + convert(datetime, ter.min_marc) as time)) horafim,
+            ter.tipo + convert(varchar, ter.c_tecnico) + '|' + convert(varchar, ter.filtro) codigotecnico, 
+            ter.nome nometecnico
             from TRATAMEN t
             inner join INSTITUI i on i.c_instit = t.codinst
             inner join SESSTRAT s on t.c_tratamen = s.c_tratamen 

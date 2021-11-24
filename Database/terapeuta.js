@@ -1,5 +1,5 @@
-const dboperations = require('./dboperations');
-const utils = require('./utils');
+const dboperations = require('../Utils/dboperations');
+const utils = require('../Utils/utils');
 
 class Terapeuta {
   static async getTerapeuta(codigo, tipo, filtro) {
@@ -101,7 +101,7 @@ class Terapeuta {
           case when('T'= ter.tipo)then(s.horafisio)
               when('A'= ter.tipo)then(s.horaaux)	
               else s.horaoutro end
-      ) + convert(datetime, ter.min_marc) as time)) horaFim
+      ) + convert(datetime, ter.min_marc) as time)) horafim
       
       from TRATAMEN t 
       INNER JOIN INSTITUI i on i.c_instit = t.codinst

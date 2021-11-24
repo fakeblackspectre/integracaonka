@@ -1,4 +1,4 @@
-var config = require('./dbconfig');
+var config = require('../Configs/dbconfig');
 var utils = require('./utils');
 const sql = require('mssql');
 
