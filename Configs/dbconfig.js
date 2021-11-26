@@ -2,7 +2,7 @@
 require('dotenv-safe').config();
 
 const config = {
-  server: process.env.SERVER,
+  server: process.env.SERVER_DB,
   port: process.env.PORT_DB,
   user: process.env.USER_DB,
   password: '',
