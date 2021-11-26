@@ -486,17 +486,24 @@ router.post('/sendWebhook', async (req, res, next) => {
       clientsecret: process.env.NKA_CLIENT_SECRET,
     };
     try {
-      const resp = await axios.post(req.body.urlexterno, data);
-      if (resp) {
-        return res.json({ message: 'Sucesso!' });
-      }
-      return next(createError(500, 'Erro a comunicar com API externa'));
+      const hooks = registerHooks(req.body.urlexterno);
+      hooks.trigger('callback_hook', data);
+      return res.json({ message: 'webhook sent!' });
+
     } catch (err) {
       return next(createError(500, 'Erro a comunicar com API externa'));
     }
   }
   next(createError(500, 'API - Parâmetros em falta!'));
 });
+
+const registerHooks = (urlExterno) => {
+  return new webhooks({
+      db: {
+          'callback_hook': [urlExterno]
+      }
+  });
+}
 
 //receber webhooks de NKA quando é alterada uma aula ou um registo de presença
 router.post('/api/webhook', async (req, res, next) => {
