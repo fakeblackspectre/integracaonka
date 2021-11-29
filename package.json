@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
     "axios": "^0.24.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv-safe": "^8.2.0",
     "express": "^4.17.1",
     "http-errors": "^1.8.0",
+    "husky": "^7.0.4",
     "jsonwebtoken": "^8.5.1",
+    "lint-staged": "^12.1.2",
     "moment": "^2.29.1",
     "mssql": "^7.2.1",
     "node-webhooks": "^1.4.2",
@@ -23,7 +27,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "prepare": "husky install"
   },
   "author": "",
   "license": "ISC"
