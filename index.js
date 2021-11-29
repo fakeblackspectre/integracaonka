@@ -1,7 +1,6 @@
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
-const { nextTick } = require('process');
 const Routes = require('./routes');
 
 const app = express();

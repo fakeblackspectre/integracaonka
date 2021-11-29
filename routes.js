@@ -22,9 +22,10 @@ function verifyJWT(req, res, next) {
 
   return jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) {
-      return res
-        .status(500)
-        .json({ auth: false, message: 'Failed to authenticate token.' });
+      return res.status(500).json({
+        auth: false,
+        message: 'Failed to authenticate token.',
+      });
     }
 
     // se tudo estiver ok, salva no request para uso posterior
@@ -113,7 +114,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
       for (let t = inicio; t < fim; t = t.add(intervalo, 'm')) {
         if (remove) {
           disponibilidadesDia = disponibilidadesDia.filter(
-            (f) => f.data.getTime() !== data.getTime() || f.hora !== t.format('HH:mm'),
+            f => f.data.getTime() !== data.getTime() || f.hora !== t.format('HH:mm'),
           );
           continue;
         }
@@ -140,23 +141,17 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
       const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
       if (!terapeuta) return res.json(terapeuta);
 
-      const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
-        codigo,
-        tipo,
-      );
+      const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(codigo, tipo);
       const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
       const tempoTratamento = terapeuta.min_marc;
-      const TempoTratamentoMinutos = moment(tempoTratamento, 'HH:mm').get('hours') * 60
-        + moment(tempoTratamento, 'HH:mm').get('minutes');
+      const TempoTratamentoMinutos =
+        moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
+        moment(tempoTratamento, 'HH:mm').get('minutes');
       maxTratamentos = terapeuta.maxtrat;
       const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
       // const empresa = await Calendario.getEmpresa(filtro);
       const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
-      const aulas = await Calendario.getMarcacoesComUnidade(
-        codigo,
-        tipo,
-        filtro,
-      );
+      const aulas = await Calendario.getMarcacoesComUnidade(codigo, tipo, filtro);
 
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
@@ -178,35 +173,20 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 
         // #region Horário fixo de manhã
         if (!!horaInicioManha && !!horaFimManha) {
-          addHorasPossiveis(
-            horaInicioManha,
-            horaFimManha,
-            TempoTratamentoMinutos,
-            d,
-          );
+          addHorasPossiveis(horaInicioManha, horaFimManha, TempoTratamentoMinutos, d);
         }
         // #endregion
         // #region Horário fixo de tarde
         if (!!horaInicioTarde && !!horaFimTarde) {
-          addHorasPossiveis(
-            horaInicioTarde,
-            horaFimTarde,
-            TempoTratamentoMinutos,
-            d,
-          );
+          addHorasPossiveis(horaInicioTarde, horaFimTarde, TempoTratamentoMinutos, d);
         }
         // #endregion
         // #region HORARIO VARIAVEL
-        const horarioVariavelDia = horarioVariavel.filter(
-          (f) => f.data.getTime() === d.getTime(),
-        );
+        const horarioVariavelDia = horarioVariavel.filter(f => f.data.getTime() === d.getTime());
         if (horarioVariavelDia.length === 1) {
           // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
           // Horario Variavel Manha
-          if (
-            !!horarioVariavelDia[0].d_m_inic
-            && !!horarioVariavelDia[0].d_m_fim
-          ) {
+          if (!!horarioVariavelDia[0].d_m_inic && !!horarioVariavelDia[0].d_m_fim) {
             addHorasPossiveis(
               horarioVariavelDia[0].d_m_inic,
               horarioVariavelDia[0].d_m_fim,
@@ -215,10 +195,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
             );
           }
           // Horario Variavel Tarde
-          if (
-            !!horarioVariavelDia[0].d_t_inic
-            && !!horarioVariavelDia[0].d_t_fim
-          ) {
+          if (!!horarioVariavelDia[0].d_t_inic && !!horarioVariavelDia[0].d_t_fim) {
             addHorasPossiveis(
               horarioVariavelDia[0].d_t_inic,
               horarioVariavelDia[0].d_t_fim,
@@ -229,7 +206,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         }
         // #endregion
         // #region FOLGAS
-        const folgasDia = folgas.filter((f) => f.data.getTime() === d.getTime());
+        const folgasDia = folgas.filter(f => f.data.getTime() === d.getTime());
         if (folgasDia.length === 1) {
           if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
             addHorasPossiveis(
@@ -252,29 +229,28 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         }
         // #endregion
         // #region Remover Vagas Por Marcação
-        const aulasDia = aulas.filter((f) => f.data.getTime() === d.getTime());
+        const aulasDia = aulas.filter(f => f.data.getTime() === d.getTime());
         if (aulasDia.length > 0) {
-          aulasDia.forEach((e) => {
+          aulasDia.forEach(e => {
             for (const a of disponibilidadesDia) {
-              if (
-                a.data.getTime() === e.data.getTime()
-                && a.hora === e.horainic
-              ) {
+              if (a.data.getTime() === e.data.getTime() && a.hora === e.horainic) {
                 a.vagas -= e.UnidadeTempo;
                 break;
               }
             }
           });
         }
-        disponibilidadesDia = disponibilidadesDia.filter((f) => f.vagas > 0);
+        disponibilidadesDia = disponibilidadesDia.filter(f => f.vagas > 0);
 
         // #endregion
 
-        disponibilidadesDia.sort((a, b) => (moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
-          ? 1
-          : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
+        disponibilidadesDia.sort((a, b) =>
+          moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
+            ? 1
+            : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
             ? -1
-            : 0)); // ordenar por hora
+            : 0,
+        ); // ordenar por hora
         // adicionar ao array global as disponiblidades do dia
         disponibilidades = disponibilidades.concat(disponibilidadesDia);
       }
@@ -296,27 +272,17 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         const codigo = splited[0].substring(1);
         const tipo = splited[0][0];
         const filtro = splited[1];
-        const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
-          codigo,
-          tipo,
-        );
+        const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(codigo, tipo);
         const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
         const tempoTratamento = terapeuta.min_marc;
-        const TempoTratamentoMinutos = moment(tempoTratamento, 'HH:mm').get('hours') * 60
-          + moment(tempoTratamento, 'HH:mm').get('minutes');
+        const TempoTratamentoMinutos =
+          moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
+          moment(tempoTratamento, 'HH:mm').get('minutes');
         maxTratamentos = terapeuta.maxtrat;
-        const marcacoes = await Terapeuta.getAulasTerapeuta(
-          codigo,
-          tipo,
-          filtro,
-        );
+        const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
         // const empresa = await Calendario.getEmpresa(filtro);
         const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
-        const aulas = await Calendario.getMarcacoesComUnidade(
-          codigo,
-          tipo,
-          filtro,
-        );
+        const aulas = await Calendario.getMarcacoesComUnidade(codigo, tipo, filtro);
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         const dataFinal = new Date(
@@ -338,35 +304,20 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 
           // #region Horário fixo de manhã
           if (!!horaInicioManha && !!horaFimManha) {
-            addHorasPossiveis(
-              horaInicioManha,
-              horaFimManha,
-              TempoTratamentoMinutos,
-              d,
-            );
+            addHorasPossiveis(horaInicioManha, horaFimManha, TempoTratamentoMinutos, d);
           }
           // #endregion
           // #region Horário fixo de tarde
           if (!!horaInicioTarde && !!horaFimTarde) {
-            addHorasPossiveis(
-              horaInicioTarde,
-              horaFimTarde,
-              TempoTratamentoMinutos,
-              d,
-            );
+            addHorasPossiveis(horaInicioTarde, horaFimTarde, TempoTratamentoMinutos, d);
           }
           // #endregion
           // #region HORARIO VARIAVEL
-          const horarioVariavelDia = horarioVariavel.filter(
-            (f) => f.data.getTime() === d.getTime(),
-          );
+          const horarioVariavelDia = horarioVariavel.filter(f => f.data.getTime() === d.getTime());
           if (horarioVariavelDia.length === 1) {
             // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
             // Horario Variavel Manha
-            if (
-              !!horarioVariavelDia[0].d_m_inic
-              && !!horarioVariavelDia[0].d_m_fim
-            ) {
+            if (!!horarioVariavelDia[0].d_m_inic && !!horarioVariavelDia[0].d_m_fim) {
               addHorasPossiveis(
                 horarioVariavelDia[0].d_m_inic,
                 horarioVariavelDia[0].d_m_fim,
@@ -375,10 +326,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
               );
             }
             // Horario Variavel Tarde
-            if (
-              !!horarioVariavelDia[0].d_t_inic
-              && !!horarioVariavelDia[0].d_t_fim
-            ) {
+            if (!!horarioVariavelDia[0].d_t_inic && !!horarioVariavelDia[0].d_t_fim) {
               addHorasPossiveis(
                 horarioVariavelDia[0].d_t_inic,
                 horarioVariavelDia[0].d_t_fim,
@@ -389,9 +337,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
           }
           // #endregion
           // #region FOLGAS
-          const folgasDia = folgas.filter(
-            (f) => f.data.getTime() === d.getTime(),
-          );
+          const folgasDia = folgas.filter(f => f.data.getTime() === d.getTime());
           if (folgasDia.length === 1) {
             if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
               addHorasPossiveis(
@@ -414,29 +360,28 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
           }
           // #endregion
           // #region Remover Vagas Por Marcação
-          const aulasDia = aulas.filter((f) => f.data.getTime() === d.getTime());
+          const aulasDia = aulas.filter(f => f.data.getTime() === d.getTime());
           if (aulasDia.length > 0) {
-            aulasDia.forEach((e) => {
+            aulasDia.forEach(e => {
               for (const a of disponibilidadesDia) {
-                if (
-                  a.data.getTime() === e.data.getTime()
-                  && a.hora === e.horainic
-                ) {
+                if (a.data.getTime() === e.data.getTime() && a.hora === e.horainic) {
                   a.vagas -= e.UnidadeTempo;
                   break;
                 }
               }
             });
           }
-          disponibilidadesDia = disponibilidadesDia.filter((f) => f.vagas > 0);
+          disponibilidadesDia = disponibilidadesDia.filter(f => f.vagas > 0);
 
           // #endregion
 
-          disponibilidadesDia.sort((a, b) => (moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
-            ? 1
-            : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
+          disponibilidadesDia.sort((a, b) =>
+            moment(a.hora, 'HH:mm') > moment(b.hora, 'HH:mm')
+              ? 1
+              : moment(b.hora, 'HH:mm') > moment(a.hora, 'HH:mm')
               ? -1
-              : 0)); // ordenar por hora
+              : 0,
+          ); // ordenar por hora
           // adicionar ao array global as disponiblidades do dia
           disponibilidades = disponibilidades.concat(disponibilidadesDia);
         }
@@ -460,8 +405,8 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 router.post('/login', (req, res) => {
   // esse teste abaixo deve ser feito no seu banco de dados
   if (
-    req.body.ClientID === process.env.CLIENT_ID
-    && req.body.ClientSecret === process.env.CLIENT_SECRET
+    req.body.ClientID === process.env.CLIENT_ID &&
+    req.body.ClientSecret === process.env.CLIENT_SECRET
   ) {
     // auth ok
     const id = 1; // esse id viria do banco de dados
@@ -485,11 +430,11 @@ router.post('/logout', (req, res) => {
 // Server para todos //UTENTES // CALENDARIO // FISIOTERAPEUTA // TRATAMENTO
 router.post('/sendWebhook', async (req, res, next) => {
   if (
-    req.body.modulo
-    || req.body.operacao
-    || req.body.operacaoregisto
-    || req.body.id
-    || req.body.urlexterno
+    req.body.modulo ||
+    req.body.operacao ||
+    req.body.operacaoregisto ||
+    req.body.id ||
+    req.body.urlexterno
   ) {
     const data = {
       modulo: req.body.modulo,
@@ -510,25 +455,21 @@ router.post('/sendWebhook', async (req, res, next) => {
   next(createError(500, 'API - Parâmetros em falta!'));
 });
 
-const registerHooks = (urlExterno) => new WebHooks({
-  db: {
-    callback_hook: [urlExterno],
-  },
-});
+const registerHooks = urlExterno =>
+  new WebHooks({
+    db: {
+      callback_hook: [urlExterno],
+    },
+  });
 
 // receber webhooks de NKA quando é alterada uma aula ou um registo de presença
 router.post('/api/webhook', async (req, res, next) => {
   const _modulo = req.body.modulo;
-  const _operacao = req.body.operacao;
-  const _operacaoregisto = req.body.operacaoregisto;
   const _id = req.body.id;
   const _clientid = req.body.clientid;
   const _clientsecret = req.body.clientsecret;
 
-  if (
-    _clientid === process.env.CLIENT_ID
-    && _clientsecret === process.env.CLIENT_SECRET
-  ) {
+  if (_clientid === process.env.CLIENT_ID && _clientsecret === process.env.CLIENT_SECRET) {
     const urlExterno = await ApiConfiguracao.getUrlExterno();
     const acessToken = await ObterTokenNKA(urlExterno);
 
@@ -548,11 +489,11 @@ router.post('/api/webhook', async (req, res, next) => {
   }
 });
 
-function Agenda(resp) {
+function Agenda() {
   return 'A agenda ainda não faz nada';
 }
 
-function Presenca(resp) {
+function Presenca() {
   return 'A presença ainda não faz nada';
 }
 
@@ -575,7 +516,7 @@ router.use((req, res, next) => {
   next(createError(404, 'Not found'));
 });
 
-router.use((err, req, res, next) => {
+router.use((err, req, res) => {
   res.status(err.status || 500);
   res.send({
     error: {
