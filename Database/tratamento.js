@@ -4,10 +4,10 @@ const utils = require('../Utils/utils');
 class Tratamento {
   static async getTratamento(codigo) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo);
 
-      let _sql = `
+      const _sql = `
             select t.c_tratamen, u.c_utente, u.nome, u.n_contrib
             from TRATAMEN t
             inner join UTENTES u on t.c_utente = u.c_utente
@@ -17,16 +17,16 @@ class Tratamento {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + ` do tratamento com o código ${codigo}`
+        `${error.message} do tratamento com o código ${codigo}`,
       );
     }
   }
 
   static async getAllTratamento() {
     try {
-      let params = new Array();
+      const params = new Array();
 
-      let _sql = `
+      const _sql = `
       select t.c_tratamen, u.c_utente, u.nome, u.n_contrib 
       from TRATAMEN t 
       inner join UTENTES u on t.c_utente = u.c_utente
@@ -50,10 +50,10 @@ class Tratamento {
 
   static async getAulas(codigo) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo);
 
-      let _sql = `
+      const _sql = `
             select s.c_sesstrat codigo, s.data, s.horainic, 
             convert(varchar(5), cast(convert(datetime, s.horainic) + convert(datetime, ter.min_marc) as time)) horafim,
             ter.tipo + convert(varchar, ter.c_tecnico) + '|' + convert(varchar, ter.filtro) codigotecnico, 
@@ -83,7 +83,7 @@ class Tratamento {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + ` de aulas para o tratamento com o código ${codigo}`
+        `${error.message} de aulas para o tratamento com o código ${codigo}`,
       );
     }
   }

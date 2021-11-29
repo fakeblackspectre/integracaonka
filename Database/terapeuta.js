@@ -4,10 +4,10 @@ const utils = require('../Utils/utils');
 class Terapeuta {
   static async getTerapeuta(codigo, tipo, filtro) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo, tipo, filtro);
 
-      let _sql = `
+      const _sql = `
             select 
             'T' + convert(varchar, c_tecnico) + '|' + convert(varchar, filtro) id, 
             c_tecnico, nome, n_contrib, localidade, telf, num_bi, arquivo, data_emiss, data_nasc,
@@ -40,7 +40,7 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + ` do terapeuta com o código ${codigo} e o filtro ${filtro}`
+        `${error.message} do terapeuta com o código ${codigo} e o filtro ${filtro}`,
 
       );
     }
@@ -48,9 +48,9 @@ class Terapeuta {
 
   static async getAllTerapeuta() {
     try {
-      let params = new Array();
+      const params = new Array();
 
-      let _sql = `
+      const _sql = `
             select 
             'T' + convert(varchar, c_tecnico) + '|' + convert(varchar, filtro) id, 
             c_tecnico, nome, n_contrib, localidade, telf, num_bi, arquivo, data_emiss, data_nasc,
@@ -81,24 +81,23 @@ class Terapeuta {
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, error.message
-      );
+      utils.handleError(error, error.message);
     }
   }
 
   static async getAulasTerapeuta(codigo, tipo, filtro) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo, tipo, filtro);
 
-      let _sql = `
+      const _sql = `
       select s.data, 
       case when('T'= ter.tipo)then(s.horafisio)
-           when('A'= ter.tipo)then(s.horaaux)	
+           when('A'= ter.tipo)then(s.horaaux)
            else s.horaoutro end horainic, 
       convert(varchar(5), cast(convert(datetime, 
           case when('T'= ter.tipo)then(s.horafisio)
-              when('A'= ter.tipo)then(s.horaaux)	
+              when('A'= ter.tipo)then(s.horaaux)
               else s.horaoutro end
       ) + convert(datetime, ter.min_marc) as time)) horafim
       
@@ -126,17 +125,18 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + ` de aulas para o terapeuta com o código ${codigo} e o filtro ${filtro}`
+        `${error.message} de aulas para o terapeuta com o código ${codigo} e o filtro ${filtro}`,
 
       );
     }
   }
+
   static async getHorarioVariavelTerapeuta(codigo, tipo) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo, tipo);
 
-      let _sql = `
+      const _sql = `
       select c_tecnico, data, d_m_inic, d_m_fim , d_t_inic, d_t_fim
       from HORVART where c_tecnico = @1 AND @2 = 'T'
       UNION ALL 
@@ -150,16 +150,17 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + `  horário variável do terapeuta com o código ${codigo} e o filtro ${filtro}`
+        `${error.message} do horário variável do terapeuta com o código ${codigo}`,
       );
     }
   }
+
   static async getFolgasTerapeuta(codigo, tipo) {
     try {
-      let params = new Array();
+      const params = new Array();
       params.push(codigo, tipo);
 
-      let _sql = `
+      const _sql = `
       select c_tecnico, data, d_m_inic, d_m_fim , d_t_inic, d_t_fim
       from FOLGAST where c_tecnico = @1 AND @2 = 'T' 
       UNION ALL 
@@ -173,7 +174,7 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        error.message + ` de folgas do terapeuta com o código ${codigo} e o filtro ${filtro}`
+        `${error.message} de folgas do terapeuta com o código ${codigo}`,
 
       );
     }
