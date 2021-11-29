@@ -114,9 +114,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
       for (let t = inicio; t < fim; t = t.add(intervalo, 'm')) {
         if (remove) {
           disponibilidadesDia = disponibilidadesDia.filter(
-            f =>
-              f.data.getTime() !== data.getTime() ||
-              f.hora !== t.format('HH:mm'),
+            f => f.data.getTime() !== data.getTime() || f.hora !== t.format('HH:mm'),
           );
           continue;
         }
@@ -143,24 +141,17 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
       const terapeuta = await Terapeuta.getTerapeuta(codigo, tipo, filtro);
       if (!terapeuta) return res.json(terapeuta);
 
-      const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
-        codigo,
-        tipo,
-      );
+      const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(codigo, tipo);
       const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
       const tempoTratamento = terapeuta.min_marc;
       const TempoTratamentoMinutos =
-        moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
-        moment(tempoTratamento, 'HH:mm').get('minutes');
+        moment(tempoTratamento, 'HH:mm').get('hours') * 60
+        + moment(tempoTratamento, 'HH:mm').get('minutes');
       maxTratamentos = terapeuta.maxtrat;
       const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
       // const empresa = await Calendario.getEmpresa(filtro);
       const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
-      const aulas = await Calendario.getMarcacoesComUnidade(
-        codigo,
-        tipo,
-        filtro,
-      );
+      const aulas = await Calendario.getMarcacoesComUnidade(codigo, tipo, filtro);
 
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
@@ -182,35 +173,20 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 
         // #region Horário fixo de manhã
         if (!!horaInicioManha && !!horaFimManha) {
-          addHorasPossiveis(
-            horaInicioManha,
-            horaFimManha,
-            TempoTratamentoMinutos,
-            d,
-          );
+          addHorasPossiveis(horaInicioManha, horaFimManha, TempoTratamentoMinutos, d);
         }
         // #endregion
         // #region Horário fixo de tarde
         if (!!horaInicioTarde && !!horaFimTarde) {
-          addHorasPossiveis(
-            horaInicioTarde,
-            horaFimTarde,
-            TempoTratamentoMinutos,
-            d,
-          );
+          addHorasPossiveis(horaInicioTarde, horaFimTarde, TempoTratamentoMinutos, d);
         }
         // #endregion
         // #region HORARIO VARIAVEL
-        const horarioVariavelDia = horarioVariavel.filter(
-          f => f.data.getTime() === d.getTime(),
-        );
+        const horarioVariavelDia = horarioVariavel.filter(f => f.data.getTime() === d.getTime());
         if (horarioVariavelDia.length === 1) {
           // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
           // Horario Variavel Manha
-          if (
-            !!horarioVariavelDia[0].d_m_inic &&
-            !!horarioVariavelDia[0].d_m_fim
-          ) {
+          if (!!horarioVariavelDia[0].d_m_inic && !!horarioVariavelDia[0].d_m_fim) {
             addHorasPossiveis(
               horarioVariavelDia[0].d_m_inic,
               horarioVariavelDia[0].d_m_fim,
@@ -219,10 +195,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
             );
           }
           // Horario Variavel Tarde
-          if (
-            !!horarioVariavelDia[0].d_t_inic &&
-            !!horarioVariavelDia[0].d_t_fim
-          ) {
+          if (!!horarioVariavelDia[0].d_t_inic && !!horarioVariavelDia[0].d_t_fim) {
             addHorasPossiveis(
               horarioVariavelDia[0].d_t_inic,
               horarioVariavelDia[0].d_t_fim,
@@ -260,10 +233,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         if (aulasDia.length > 0) {
           aulasDia.forEach(e => {
             for (const a of disponibilidadesDia) {
-              if (
-                a.data.getTime() === e.data.getTime() &&
-                a.hora === e.horainic
-              ) {
+              if (a.data.getTime() === e.data.getTime() && a.hora === e.horainic) {
                 a.vagas -= e.UnidadeTempo;
                 break;
               }
@@ -302,28 +272,17 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
         const codigo = splited[0].substring(1);
         const tipo = splited[0][0];
         const filtro = splited[1];
-        const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(
-          codigo,
-          tipo,
-        );
+        const horarioVariavel = await Terapeuta.getHorarioVariavelTerapeuta(codigo, tipo);
         const folgas = await Terapeuta.getFolgasTerapeuta(codigo, tipo);
         const tempoTratamento = terapeuta.min_marc;
         const TempoTratamentoMinutos =
-          moment(tempoTratamento, 'HH:mm').get('hours') * 60 +
-          moment(tempoTratamento, 'HH:mm').get('minutes');
+          moment(tempoTratamento, 'HH:mm').get('hours') * 60
+          + moment(tempoTratamento, 'HH:mm').get('minutes');
         maxTratamentos = terapeuta.maxtrat;
-        const marcacoes = await Terapeuta.getAulasTerapeuta(
-          codigo,
-          tipo,
-          filtro,
-        );
+        const marcacoes = await Terapeuta.getAulasTerapeuta(codigo, tipo, filtro);
         // const empresa = await Calendario.getEmpresa(filtro);
         const folgasEmpresa = await Calendario.getFolgasEmpresa(filtro);
-        const aulas = await Calendario.getMarcacoesComUnidade(
-          codigo,
-          tipo,
-          filtro,
-        );
+        const aulas = await Calendario.getMarcacoesComUnidade(codigo, tipo, filtro);
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         const dataFinal = new Date(
@@ -345,35 +304,20 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 
           // #region Horário fixo de manhã
           if (!!horaInicioManha && !!horaFimManha) {
-            addHorasPossiveis(
-              horaInicioManha,
-              horaFimManha,
-              TempoTratamentoMinutos,
-              d,
-            );
+            addHorasPossiveis(horaInicioManha, horaFimManha, TempoTratamentoMinutos, d);
           }
           // #endregion
           // #region Horário fixo de tarde
           if (!!horaInicioTarde && !!horaFimTarde) {
-            addHorasPossiveis(
-              horaInicioTarde,
-              horaFimTarde,
-              TempoTratamentoMinutos,
-              d,
-            );
+            addHorasPossiveis(horaInicioTarde, horaFimTarde, TempoTratamentoMinutos, d);
           }
           // #endregion
           // #region HORARIO VARIAVEL
-          const horarioVariavelDia = horarioVariavel.filter(
-            f => f.data.getTime() === d.getTime(),
-          );
+          const horarioVariavelDia = horarioVariavel.filter(f => f.data.getTime() === d.getTime());
           if (horarioVariavelDia.length === 1) {
             // ou tem 1 ou tem 0 // não pode ter mais do que 1 por dia
             // Horario Variavel Manha
-            if (
-              !!horarioVariavelDia[0].d_m_inic &&
-              !!horarioVariavelDia[0].d_m_fim
-            ) {
+            if (!!horarioVariavelDia[0].d_m_inic && !!horarioVariavelDia[0].d_m_fim) {
               addHorasPossiveis(
                 horarioVariavelDia[0].d_m_inic,
                 horarioVariavelDia[0].d_m_fim,
@@ -382,10 +326,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
               );
             }
             // Horario Variavel Tarde
-            if (
-              !!horarioVariavelDia[0].d_t_inic &&
-              !!horarioVariavelDia[0].d_t_fim
-            ) {
+            if (!!horarioVariavelDia[0].d_t_inic && !!horarioVariavelDia[0].d_t_fim) {
               addHorasPossiveis(
                 horarioVariavelDia[0].d_t_inic,
                 horarioVariavelDia[0].d_t_fim,
@@ -396,9 +337,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
           }
           // #endregion
           // #region FOLGAS
-          const folgasDia = folgas.filter(
-            f => f.data.getTime() === d.getTime(),
-          );
+          const folgasDia = folgas.filter(f => f.data.getTime() === d.getTime());
           if (folgasDia.length === 1) {
             if (!!folgasDia[0].d_m_inic && !!folgasDia[0].d_m_fim) {
               addHorasPossiveis(
@@ -425,10 +364,7 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
           if (aulasDia.length > 0) {
             aulasDia.forEach(e => {
               for (const a of disponibilidadesDia) {
-                if (
-                  a.data.getTime() === e.data.getTime() &&
-                  a.hora === e.horainic
-                ) {
+                if (a.data.getTime() === e.data.getTime() && a.hora === e.horainic) {
                   a.vagas -= e.UnidadeTempo;
                   break;
                 }
@@ -469,8 +405,8 @@ router.get('/calendario', verifyJWT, async (req, res, next) => {
 router.post('/login', (req, res) => {
   // esse teste abaixo deve ser feito no seu banco de dados
   if (
-    req.body.ClientID === process.env.CLIENT_ID &&
-    req.body.ClientSecret === process.env.CLIENT_SECRET
+    req.body.ClientID === process.env.CLIENT_ID
+    && req.body.ClientSecret === process.env.CLIENT_SECRET
   ) {
     // auth ok
     const id = 1; // esse id viria do banco de dados
@@ -494,11 +430,11 @@ router.post('/logout', (req, res) => {
 // Server para todos //UTENTES // CALENDARIO // FISIOTERAPEUTA // TRATAMENTO
 router.post('/sendWebhook', async (req, res, next) => {
   if (
-    req.body.modulo ||
-    req.body.operacao ||
-    req.body.operacaoregisto ||
-    req.body.id ||
-    req.body.urlexterno
+    req.body.modulo
+    || req.body.operacao
+    || req.body.operacaoregisto
+    || req.body.id
+    || req.body.urlexterno
   ) {
     const data = {
       modulo: req.body.modulo,
@@ -535,10 +471,7 @@ router.post('/api/webhook', async (req, res, next) => {
   const _clientid = req.body.clientid;
   const _clientsecret = req.body.clientsecret;
 
-  if (
-    _clientid === process.env.CLIENT_ID &&
-    _clientsecret === process.env.CLIENT_SECRET
-  ) {
+  if (_clientid === process.env.CLIENT_ID && _clientsecret === process.env.CLIENT_SECRET) {
     const urlExterno = await ApiConfiguracao.getUrlExterno();
     const acessToken = await ObterTokenNKA(urlExterno);
 
