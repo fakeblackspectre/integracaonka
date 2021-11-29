@@ -4,7 +4,7 @@ const utils = require('../Utils/utils');
 class ApiConfiguracao {
   static async getUrlExterno() {
     try {
-      const _sql = `select UrlExterno, Codigo 
+      let _sql = `select UrlExterno, Codigo 
       from API.Configuracao
       where Ativo = 1 `;
 

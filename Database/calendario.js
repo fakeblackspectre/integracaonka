@@ -4,45 +4,49 @@ const utils = require('../Utils/utils');
 class Calendario {
   static async getEmpresa(filtro) {
     try {
-      const params = new Array();
+      let params = new Array();
       params.push(filtro);
 
-      const _sql = `
+      let _sql = `
       select hora_inic_manha, hora_fim_tarde 
       from EMPRESAS where c_empresa = @1`;
 
       return await dboperations.getItem(_sql, params);
     } catch (error) {
-      utils.handleError(error, `${error.message} para o empresa com o filtro ${filtro}`);
+      utils.handleError(
+        error,
+        error.message + ` para o empresa com o filtro ${filtro}`
+      );
     }
   }
-
   static async getFolgasEmpresa(filtro) {
     try {
-      const params = new Array();
+      let params = new Array();
       params.push(filtro);
 
-      const _sql = `
+      let _sql = `
       select (dia - 1) dia, filtro from CLINFOLG where filtro = @1`;
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, `${error.message} das folgas para o empresa com o filtro ${filtro}`);
+      utils.handleError(
+        error,
+        error.message + ` das folgas para o empresa com o filtro ${filtro}`
+      );
     }
   }
-
   static async getMarcacoesComUnidade(codigo, tipo, filtro) {
     try {
-      const params = new Array();
+      let params = new Array();
       params.push(codigo, tipo, filtro);
 
-      const _sql = `
+      let _sql = `
       select data, horainic, SUM(UnidadeTempo) UnidadeTempo from (
         select s.data, case when(ter.tipo= 'T')then(s.horafisio)
-          when(ter.tipo= 'A')then(s.horafisio)
+          when(ter.tipo= 'A')then(s.horafisio)	
           else s.horaoutro end horainic, 
           case when(ter.tipo= 'T')then(isnull(t.unidadeTempoFisio, 1))
-          when(ter.tipo= 'A')then(isnull(t.unidadeTempoAux, 1))
+          when(ter.tipo= 'A')then(isnull(t.unidadeTempoAux, 1))	
           else isnull(t.unidadeTempoOutro, 1) end UnidadeTempo
       
         from TRATAMEN t 
@@ -73,7 +77,7 @@ class Calendario {
     } catch (error) {
       utils.handleError(
         error,
-        `${error.message} das marcações com unidades de tempo do terapeuta com o código ${codigo} e o filtro ${filtro}`,
+        error.message + ` das marcações com unidades de tempo do terapeuta com o código ${codigo} e o filtro ${filtro}`
       );
     }
   }

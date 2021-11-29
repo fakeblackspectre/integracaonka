@@ -15,7 +15,10 @@ class Tratamento {
 
       return await dboperations.getItem(_sql, params);
     } catch (error) {
-      utils.handleError(error, `${error.message} do tratamento com o código ${codigo}`);
+      utils.handleError(
+        error,
+        `${error.message} do tratamento com o código ${codigo}`,
+      );
     }
   }
 

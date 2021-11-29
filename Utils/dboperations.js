@@ -21,12 +21,8 @@ async function getItem(_sql, _params) {
   try {
     const result = await getList(_sql, _params);
 
-    if (result.length === 0) {
-      throw new Error('Não foram encontrados registos');
-    }
-    if (result.length > 1) {
-      throw new Error('Foram encontrados mais que um registo');
-    }
+    if (result.length === 0) { throw new Error('Não foram encontrados registos'); }
+    if (result.length > 1) { throw new Error('Foram encontrados mais que um registo'); }
     if (result.length === 1) return result[0];
     // devolver undefined
   } catch (error) {
