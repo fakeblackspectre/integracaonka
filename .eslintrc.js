@@ -1,0 +1,51 @@
+module.exports = {
+  env: {
+    browser: true,
+    commonjs: true,
+    es2021: true,
+  },
+  extends: ['airbnb-base', 'eslint:recommended'],
+  parserOptions: {
+    ecmaVersion: 13,
+  },
+  rules: {
+    'arrow-parens': 'off',
+    eqeqeq: 'error',
+    'function-paren-newline': 'off',
+    // indent: ['warn', 4],
+    // 'linebreak-style': [2, 'unix'],
+    'no-console': [
+      'error',
+      {
+        allow: ['info', 'warn', 'error', 'time', 'timeEnd'],
+      },
+    ],
+    'no-duplicate-imports': 'error',
+    'no-extra-parens': 'error',
+    'no-return-await': 'error',
+    'no-shadow': [
+      'error',
+      {
+        builtinGlobals: false,
+        hoist: 'functions',
+        allow: [],
+      },
+    ],
+    'operator-linebreak': 'off',
+    indent: 'off',
+    'import/prefer-default-export': 'off',
+    'no-underscore-dangle': 'off',
+    'consistent-return': 'off',
+    'no-array-constructor': 'off',
+    'no-use-before-define': 'off',
+    'no-param-reassign': 'off',
+    'no-plusplus': 'off',
+    'no-loop-func': 'off',
+    'no-restricted-syntax': 'off',
+    'no-confusing-arrow': 'off',
+    'no-nested-ternary': 'off',
+    'implicit-arrow-linebreak': 'off',
+    'no-continue': 'off',
+    'no-unused-vars': 'warn',
+  },
+};

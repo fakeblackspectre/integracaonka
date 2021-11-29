@@ -21,10 +21,7 @@ class Utente {
 
       return await dboperations.getItem(_sql, params);
     } catch (error) {
-      utils.handleError(
-        error,
-        `${error.message} do utente com o código ${codigo}`,
-      );
+      utils.handleError(error, `${error.message} do utente com o código ${codigo}`);
     }
   }
 
