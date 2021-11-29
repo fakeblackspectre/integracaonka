@@ -15,7 +15,7 @@ class Calendario {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foi encontrada a empresa com o código ' + filtro
+        error.message + ` para o empresa com o filtro ${filtro}`
       );
     }
   }
@@ -31,7 +31,7 @@ class Calendario {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foram encontradas folgas da empresa com o código ' + filtro
+        error.message + ` das folgas para o empresa com o filtro ${filtro}`
       );
     }
   }
@@ -77,10 +77,7 @@ class Calendario {
     } catch (error) {
       utils.handleError(
         error,
-        'Erro a obter as marcações com unidades de tempo do terapeuta com o código ' +
-          codigo +
-          ' e o filtro ' +
-          filtro
+        error.message + ` das marcações com unidades de tempo do terapeuta com o código ${codigo} e o filtro ${filtro}`
       );
     }
   }

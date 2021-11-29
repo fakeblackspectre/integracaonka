@@ -23,7 +23,7 @@ class Utente {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foi encontrado o utente com o código ' + codigo
+        error.message + ` do utente com o código ${codigo}`
       );
     }
   }
@@ -38,7 +38,7 @@ class Utente {
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, 'Não foram encontrados utentes');
+      utils.handleError(error, error.message);
     }
   }
 }

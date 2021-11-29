@@ -40,10 +40,8 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foi encontrado o terapeuta com o código ' +
-          codigo +
-          ' e o filtro ' +
-          filtro
+        error.message + ` do terapeuta com o código ${codigo} e o filtro ${filtro}`
+
       );
     }
   }
@@ -83,7 +81,8 @@ class Terapeuta {
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, 'Não foram encontrados terapeutas');
+      utils.handleError(error, error.message
+      );
     }
   }
 
@@ -127,10 +126,8 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foram encontradas aulas para o terapeuta com o código ' +
-          codigo +
-          ' e o filtro ' +
-          filtro
+        error.message + ` de aulas para o terapeuta com o código ${codigo} e o filtro ${filtro}`
+
       );
     }
   }
@@ -153,7 +150,7 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        'Erro a obter o horário variável do terapeuta com o código ' + codigo
+        error.message + `  horário variável do terapeuta com o código ${codigo} e o filtro ${filtro}`
       );
     }
   }
@@ -176,7 +173,8 @@ class Terapeuta {
     } catch (error) {
       utils.handleError(
         error,
-        'Erro a obter as folgas do terapeuta com o código ' + codigo
+        error.message + ` de folgas do terapeuta com o código ${codigo} e o filtro ${filtro}`
+
       );
     }
   }

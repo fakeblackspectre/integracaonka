@@ -17,7 +17,7 @@ class Tratamento {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foi encontrado o tratamento com o código ' + codigo
+        error.message + ` do tratamento com o código ${codigo}`
       );
     }
   }
@@ -44,7 +44,7 @@ class Tratamento {
 
       return await dboperations.getList(_sql, params);
     } catch (error) {
-      utils.handleError(error, 'Não foram encontrados tratamentos');
+      utils.handleError(error, error.message);
     }
   }
 
@@ -83,7 +83,7 @@ class Tratamento {
     } catch (error) {
       utils.handleError(
         error,
-        'Não foram encontradas aulas para o tratamento com o código ' + codigo
+        error.message + ` de aulas para o tratamento com o código ${codigo}`
       );
     }
   }
