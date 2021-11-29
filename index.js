@@ -1,8 +1,9 @@
 const http = require('http');
 const express = require('express');
-const Routes = require('./routes');
 const cors = require('cors');
 const { nextTick } = require('process');
+const Routes = require('./routes');
+
 const app = express();
 
 require('dotenv-safe').config();
