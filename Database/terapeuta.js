@@ -41,7 +41,6 @@ class Terapeuta {
       utils.handleError(
         error,
         `${error.message} do terapeuta com o código ${codigo} e o filtro ${filtro}`,
-
       );
     }
   }
@@ -126,7 +125,6 @@ class Terapeuta {
       utils.handleError(
         error,
         `${error.message} de aulas para o terapeuta com o código ${codigo} e o filtro ${filtro}`,
-
       );
     }
   }
@@ -175,7 +173,6 @@ class Terapeuta {
       utils.handleError(
         error,
         `${error.message} de folgas do terapeuta com o código ${codigo}`,
-
       );
     }
   }
