@@ -10,7 +10,7 @@ class ApiConfiguracao {
 
       return await dboperations.getItem(_sql);
     } catch (error) {
-      utils.handleError(error, 'Não foi encontrada nenhuma configuração');
+      utils.handleError(error, error.message);
     }
   }
 }

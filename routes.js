@@ -22,6 +22,7 @@ router.get('/utente', verifyJWT, async (req, res, next) => {
       const utente = await Utente.getUtente(id);
       return res.json(utente);
     }
+    console.log('entrei')
     const utenteAll = await Utente.getAllUtentes();
     res.json(utenteAll);
   } catch (err) {

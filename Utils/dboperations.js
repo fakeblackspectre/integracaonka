@@ -9,9 +9,9 @@ async function getList(_sql, _params) {
         _sql = replaceQueryParameters(_sql, index, param);
       });
     }
+    console.log(_sql)
     let pool = await sql.connect(config);
     let bd = await pool.request().query(_sql);
-
     return bd.recordset;
   } catch (error) {
     utils.handleError(error, 'Erro a obter a lista');
@@ -22,12 +22,14 @@ async function getItem(_sql, _params) {
   try {
     let result = await getList(_sql, _params);
 
+    if (result.length === 0)
+      throw new Error('Não foram encontrados registos');
     if (result.length > 1)
       throw new Error('Foram encontrados mais que um registo');
     if (result.length == 1) return result[0];
     // devolver undefined
   } catch (error) {
-    utils.handleError(error, 'Erro a obter item');
+    utils.handleError(error, error.message);
   }
 }
 
